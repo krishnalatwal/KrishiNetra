@@ -45,13 +45,18 @@ async def predict(file: UploadFile = File(...)):
     if model is None:
         return {"error": "Model not trained yet"}
 
-    predictions = model.predict(image_array)
+    predictions = model.predict(image_array)[0]
 
-    predicted_class = class_names[np.argmax(predictions)]
+    top3_idx = predictions.argsort()[-3:][::-1]
 
-    confidence = float(np.max(predictions))
+    results = []
+
+    for idx in top3_idx:
+        results.append({
+            "disease": class_names[idx],
+            "confidence": float(predictions[idx])
+        })
 
     return {
-        "prediction": predicted_class,
-        "confidence": confidence
+        "predictions": results
     }
