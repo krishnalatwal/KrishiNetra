@@ -6,7 +6,7 @@ from tensorflow.keras.models import Model
 
 dataset_path = "dataset"
 
-image_size = (224,224)
+image_size = (224, 224)
 batch_size = 32
 
 datagen = ImageDataGenerator(
@@ -30,7 +30,7 @@ val_data = datagen.flow_from_directory(
     subset='validation'
 )
 
-print(train_data.class_indices)
+print("Classes:", train_data.class_indices)
 
 base_model = MobileNetV2(
     weights='imagenet',

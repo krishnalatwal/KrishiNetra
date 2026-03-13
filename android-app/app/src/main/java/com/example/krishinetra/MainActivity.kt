@@ -3,17 +3,25 @@ package com.example.krishinetra
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import java.io.File
+import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var imageView: ImageView
+    private lateinit var resultText: TextView
+    private var imageUri: Uri? = null
 
-    private val CAMERA_REQUEST = 100
     private val GALLERY_REQUEST = 200
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,22 +29,20 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         imageView = findViewById(R.id.imageView)
+        resultText = findViewById(R.id.resultText)
 
-        val cameraBtn = findViewById<Button>(R.id.cameraBtn)
         val galleryBtn = findViewById<Button>(R.id.galleryBtn)
-
-        cameraBtn.setOnClickListener {
-            openCamera()
-        }
+        val predictBtn = findViewById<Button>(R.id.predictBtn)
 
         galleryBtn.setOnClickListener {
             openGallery()
         }
-    }
 
-    private fun openCamera() {
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        startActivityForResult(intent, CAMERA_REQUEST)
+        predictBtn.setOnClickListener {
+            imageUri?.let {
+                uploadImage(it)
+            }
+        }
     }
 
     private fun openGallery() {
@@ -47,17 +53,54 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (resultCode == Activity.RESULT_OK) {
-
-            if (requestCode == CAMERA_REQUEST) {
-                val photo = data?.extras?.get("data") as Bitmap
-                imageView.setImageBitmap(photo)
-            }
-
-            if (requestCode == GALLERY_REQUEST) {
-                val imageUri = data?.data
-                imageView.setImageURI(imageUri)
-            }
+        if (resultCode == Activity.RESULT_OK && requestCode == GALLERY_REQUEST) {
+            imageUri = data?.data
+            imageView.setImageURI(imageUri)
         }
+    }
+
+    private fun uploadImage(uri: Uri) {
+
+        val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
+
+        val file = File(cacheDir, "upload.jpg")
+        val output = FileOutputStream(file)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, output)
+        output.flush()
+        output.close()
+
+        val requestFile = RequestBody.create(
+            "image/*".toMediaTypeOrNull(),
+            file
+        )
+
+        val body = MultipartBody.Part.createFormData(
+            "file",
+            file.name,
+            requestFile
+        )
+
+        val call = RetrofitClient.instance.uploadImage(body)
+
+        call.enqueue(object : retrofit2.Callback<PredictionResponse> {
+
+            override fun onResponse(
+                call: retrofit2.Call<PredictionResponse>,
+                response: retrofit2.Response<PredictionResponse>
+            ) {
+                if (response.isSuccessful) {
+
+                    val result = response.body()
+
+                    resultText.text =
+                        "Disease: ${result?.disease}\nConfidence: ${result?.confidence}"
+                }
+            }
+
+            override fun onFailure(call: retrofit2.Call<PredictionResponse>, t: Throwable) {
+
+                resultText.text = "Error: ${t.message}"
+            }
+        })
     }
 }
