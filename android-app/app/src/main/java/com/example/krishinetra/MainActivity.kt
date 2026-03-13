@@ -90,10 +90,24 @@ class MainActivity : AppCompatActivity() {
             ) {
                 if (response.isSuccessful) {
 
-                    val result = response.body()
+                    val predictions = response.body()?.predictions
 
-                    resultText.text =
-                        "Disease: ${result?.disease}\nConfidence: ${result?.confidence}"
+                    if (!predictions.isNullOrEmpty()) {
+
+                        val builder = StringBuilder()
+
+                        builder.append("Top Predictions:\n\n")
+
+                        for (i in predictions.indices) {
+
+                            val disease = predictions[i].disease
+                            val confidence = "%.2f".format(predictions[i].confidence * 100)
+
+                            builder.append("${i + 1}. $disease ($confidence%)\n")
+                        }
+
+                        resultText.text = builder.toString()
+                    }
                 }
             }
 
