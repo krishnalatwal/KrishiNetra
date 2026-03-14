@@ -19,6 +19,19 @@ class_names = [
     "Tomato Healthy"
 ]
 
+TREATMENTS = {
+    "Tomato Early Blight": "Use Mancozeb fungicide. Remove infected leaves and avoid overhead irrigation.",
+    "Tomato Late Blight": "Apply copper-based fungicide and improve airflow between plants.",
+    "Tomato Healthy": "No disease detected. Maintain regular irrigation and monitor plants.",
+    
+    "Potato Early Blight": "Use chlorothalonil fungicide and practice crop rotation.",
+    "Potato Late Blight": "Use metalaxyl fungicide and avoid prolonged leaf wetness.",
+    "Potato Healthy": "Crop is healthy. Continue regular monitoring.",
+    
+    "Pepper Bacterial Spot": "Use copper spray and remove infected plants to prevent spread.",
+    "Pepper Healthy": "Crop is healthy. Maintain good irrigation practices."
+}
+
 try:
     model = tf.keras.models.load_model("model/crop_disease_model.h5")
     print("Model loaded successfully")
@@ -52,9 +65,12 @@ async def predict(file: UploadFile = File(...)):
     results = []
 
     for idx in top3_idx:
+        disease = class_names[idx]
+
         results.append({
-            "disease": class_names[idx],
-            "confidence": float(predictions[idx])
+            "disease": disease,
+            "confidence": float(predictions[idx] * 100),
+            "treatment": TREATMENTS.get(disease, "No treatment info available")
         })
 
     return {

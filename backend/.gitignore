@@ -1,0 +1,65 @@
+# ==============================
+# Python
+# ==============================
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.log
+
+# virtual environment
+venv/
+.env/
+
+# ==============================
+# Dataset (large files)
+# ==============================
+
+dataset/
+ai-model/dataset/
+
+# ==============================
+# Trained ML models
+# ==============================
+
+*.h5
+*.keras
+*.pt
+*.onnx
+
+# ==============================
+# Android build files
+# ==============================
+
+android-app/.gradle/
+android-app/build/
+android-app/local.properties
+android-app/captures/
+android-app/.idea/
+
+# Mac / Windows junk
+.DS_Store
+Thumbs.db
+
+# ==============================
+# IDE files
+# ==============================
+
+.vscode/
+.idea/
+
+
+
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Kotlin / Android temporary logs
+*.log
+android-app/.kotlin/
+
+# training models
+ai-model/*.h5

@@ -6,5 +6,6 @@ data class PredictionResponse(
 
 data class Prediction(
     val disease: String,
-    val confidence: Float
+    val confidence: Float,
+    val treatment: String
 )
