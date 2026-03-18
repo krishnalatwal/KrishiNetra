@@ -63,6 +63,11 @@
 
         </com.google.android.material.card.MaterialCardView>
 
+        <Spinner
+            android:id="@+id/languageSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"/>
         <!-- BUTTONS -->
 
         <com.google.android.material.button.MaterialButton

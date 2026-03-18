@@ -6,8 +6,12 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
@@ -33,6 +37,8 @@ class ScanActivity : AppCompatActivity() {
     private val GALLERY_REQUEST = 200
 
     private val CAMERA_REQUEST = 100
+
+    private var selectedLanguage = "en"
 
     private lateinit var db: AppDatabase
 
@@ -65,6 +71,28 @@ class ScanActivity : AppCompatActivity() {
             imageUri?.let {
                 uploadImage(it)
             } ?: Toast.makeText(this, "Please select an image first", Toast.LENGTH_SHORT).show()
+        }
+
+
+        val spinner = findViewById<Spinner>(R.id.languageSpinner)
+
+        val languages = arrayOf("English", "Hindi")
+
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            languages
+        )
+
+        spinner.adapter = adapter
+
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+
+                selectedLanguage = if (position == 0) "en" else "hi"
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
         }
     }
 
@@ -134,7 +162,7 @@ class ScanActivity : AppCompatActivity() {
             requestFile
         )
 
-        val call = RetrofitClient.instance.uploadImage(body)
+        val call = RetrofitClient.instance.uploadImage(body, selectedLanguage)
 
         call.enqueue(object : retrofit2.Callback<PredictionResponse> {
 
@@ -193,10 +221,11 @@ class ScanActivity : AppCompatActivity() {
                 call: retrofit2.Call<PredictionResponse>,
                 t: Throwable
             ) {
+                t.printStackTrace()
 
                 Toast.makeText(
                     this@ScanActivity,
-                    "Prediction failed: ${t.message}",
+                    "Error: ${t.localizedMessage}",
                     Toast.LENGTH_LONG
                 ).show()
             }
